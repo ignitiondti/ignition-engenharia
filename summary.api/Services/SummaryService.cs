@@ -76,13 +76,11 @@ namespace summary.api.Services
             if (file.Length > MAX_FILE_SIZE)
                 throw new ServiceException(ErrorConstants.INVALID_FILE_SIZE);
 
-            if(
-              string.IsNullOrEmpty(file.FileName) || string.IsNullOrEmpty((file.FileName))
-              )
-
-            if (!File.Exists(file.FileName))
+            if (file == null || string.IsNullOrEmpty(file.FileName) ||
+    !new[] { ".doc", ".docx", ".txt" }.Contains(Path.GetExtension(file.FileName).ToLower()))
+            {
                 throw new ServiceException(ErrorConstants.INVALID_FILE_NAME);
-            
+            }
 
             string[] allowedExtensions = { "docx", "doc", "txt" };
             var fileExtension = file.FileName.Split(".")[1];
