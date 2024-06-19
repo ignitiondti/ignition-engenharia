@@ -42,9 +42,19 @@ namespace summary.api.Services
                 _ => throw new ServiceException(ErrorConstants.INVALID_FILE_FORMAT),
             };
 
-            //Fazer chamada do chatgpt usando o _gptClient e armazenar o response na variavel summary
-            string summary = string.Empty;
-        
+            //Fazer chamada do chatgpt usando o _gptClient e armazenar o response na variavel summary OK
+
+            string summary;
+
+            try
+            {
+                summary = await _gptClient.GetAnswer($"Summary: {fileContent}");
+            }
+            catch(Exception)
+            {
+                throw new ServiceException(ErrorConstants.FAILURE_GPT_API);
+            }
+
             try
             {
                 return _summaryRepository.SaveSummary(file.FileName, summary);
@@ -57,8 +67,25 @@ namespace summary.api.Services
 
         private void ValidateFile(IFormFile file)
         {
-            // Fazer Validações da entrada descritas na história
-            throw new NotImplementedException();
+            // Fazer Validações da entrada descritas na história    OK  
+            if (file == null)
+            {
+                throw new ServiceException(ErrorConstants.INVALID_FILE);
+            }
+
+            var fileName = Path.GetFileName(file.FileName);
+            var fileExtension = Path.GetExtension(fileName);
+            var fileSize = file.Length;
+
+            if (string.IsNullOrEmpty(fileExtension))
+            {
+                throw new ServiceException(ErrorConstants.INVALID_FILE_NAME);
+            }
+
+            if (fileSize == 0 || fileSize > MAX_FILE_SIZE)
+            {
+                throw new ServiceException(ErrorConstants.INVALID_FILE_SIZE);
+            }
         }
 
         private string ReadTxtFile(Stream stream)
