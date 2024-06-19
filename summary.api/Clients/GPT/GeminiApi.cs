@@ -50,7 +50,7 @@ namespace summary.api.Clients.GPT
                     {
                         new GeminiPart
                         {
-                            Text = prompt
+                            Text = "Resuma o seguinte texto: " + prompt
                         }
                     }
                 }

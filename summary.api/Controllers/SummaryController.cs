@@ -54,6 +54,7 @@ namespace summary.api.Controllers
                 return BadRequest(ex.Error);
             }
         }
+
         /// <summary>
         ///     Method responsible for bringing the summary filtering by its id
         /// </summary>
