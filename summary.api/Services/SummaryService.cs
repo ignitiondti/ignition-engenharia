@@ -65,7 +65,7 @@ namespace summary.api.Services
         private void ValidateFile(IFormFile file)
         {
             if (file == null) throw new ServiceException(ErrorConstants.INVALID_FILE);
-            if (file.Length > 1000000 || file.Length <= 0) throw new ServiceException(ErrorConstants.INVALID_FILE_SIZE);
+            if (file.Length > MAX_FILE_SIZE || file.Length <= 0) throw new ServiceException(ErrorConstants.INVALID_FILE_SIZE);
             if (file.FileName == "" || file.FileName == null || Path.GetExtension(file.FileName).ToLower() == "") throw new ServiceException(ErrorConstants.INVALID_FILE_NAME);
         }
 
