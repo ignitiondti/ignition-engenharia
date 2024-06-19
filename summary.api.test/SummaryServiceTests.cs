@@ -14,7 +14,7 @@ namespace summary.api.test
     public class SummaryServiceTests
     {
         private readonly Mock<ISummaryRepository> _summaryRepositoryMock;
-        private readonly Mock<IGptClient> _gptClientMock;
+        private readonly Mock<IGeminiApi> _gptClientMock;
         private readonly Mock<IFileReader> _fileReaderMock;
         private readonly SummaryService _summaryService;
 
@@ -22,7 +22,7 @@ namespace summary.api.test
         public SummaryServiceTests()
         {
             _summaryRepositoryMock = new Mock<ISummaryRepository>();
-            _gptClientMock = new Mock<IGptClient>();
+            _gptClientMock = new Mock<IGeminiApi>();
             _fileReaderMock = new Mock<IFileReader>();
             _summaryService = new SummaryService(_summaryRepositoryMock.Object, _gptClientMock.Object, _fileReaderMock.Object);
 

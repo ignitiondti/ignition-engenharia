@@ -30,7 +30,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<ISummaryService, SummaryService>();
 builder.Services.AddScoped<ISummaryRepository, SummaryRepository>();
 builder.Services.AddScoped<IFileReader, FileReader>();
-builder.Services.AddScoped<IGptClient, GeminiApi>();
+builder.Services.AddScoped<IGeminiApi, GeminiApi>();
 
 var app = builder.Build();
 app.UseCors(CorsPolicy);

@@ -1,6 +1,6 @@
 ﻿namespace summary.api.Clients.GPT
 {
-    public interface IGptClient
+    public interface IGeminiApi
     {
         Task<string> GetAnswer(string question);
     }
