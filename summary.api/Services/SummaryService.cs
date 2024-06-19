@@ -42,14 +42,23 @@ namespace summary.api.Services
                 _ => throw new ServiceException(ErrorConstants.INVALID_FILE_FORMAT),
             };
 
-            //Fazer chamada do chatgpt usando o _gptClient e armazenar o response na variavel summary
-            string summary = string.Empty;
-        
+            string summary = "";
+
+            try
+            {
+                //Fazer chamada do chatgpt usando o _gptClient e armazenar o response na variavel summary
+                summary = await _gptClient.GetAnswer($"Summary: {fileContent}");
+            }
+            catch
+            {
+                throw new ServiceException(ErrorConstants.FAILURE_GPT_API);
+            }
+            
             try
             {
                 return _summaryRepository.SaveSummary(file.FileName, summary);
             }
-            catch (Exception)
+            catch
             {
                 throw new ServiceException(ErrorConstants.FAILURE_SAVE_SUMMARY);
             }
@@ -57,8 +66,28 @@ namespace summary.api.Services
 
         private void ValidateFile(IFormFile file)
         {
-            // Fazer Validações da entrada descritas na história
-            throw new NotImplementedException();
+            if (file == null || file.Length == 0)
+                throw new ServiceException(ErrorConstants.INVALID_FILE);
+            
+            if (file.Length < 0)
+                throw new ServiceException(ErrorConstants.INVALID_FILE_SIZE);
+
+            if (file.Length > MAX_FILE_SIZE)
+                throw new ServiceException(ErrorConstants.INVALID_FILE_SIZE);
+
+            if (!File.Exists(file.FileName))
+                throw new ServiceException(ErrorConstants.INVALID_FILE_NAME);
+            
+
+            string[] allowedExtensions = { "docx", "doc", "txt" };
+            var fileExtension = file.FileName.Split(".")[1];
+
+            var check = allowedExtensions.ToList().Find(e => e == fileExtension);
+
+            if (check is null)
+            {
+                throw new ServiceException(ErrorConstants.INVALID_FILE_FORMAT);
+            }
         }
 
         private string ReadTxtFile(Stream stream)
