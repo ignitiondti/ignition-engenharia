@@ -9,7 +9,7 @@ namespace summary.api.Services
 {
     public class SummaryService : ISummaryService
     {
-        private readonly IGptClient _gptClient;
+        private readonly IGeminiApi _gptClient;
 
         private readonly ISummaryRepository _summaryRepository;
 
@@ -19,7 +19,7 @@ namespace summary.api.Services
 
         public SummaryService(
             ISummaryRepository summaryRepository,
-            IGptClient gptClient,
+            IGeminiApi gptClient,
             IFileReader fileReader)
         {
             _summaryRepository = summaryRepository;

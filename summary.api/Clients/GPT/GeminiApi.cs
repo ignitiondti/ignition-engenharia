@@ -3,7 +3,7 @@ using System.Text.Json;
 
 namespace summary.api.Clients.GPT
 {
-    public class GeminiApi : IGptClient
+    public class GeminiApi : IGeminiApi
     {
         private readonly IHttpClientFactory _httpClientFactory;
 
