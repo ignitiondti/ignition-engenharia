@@ -44,6 +44,13 @@ namespace summary.api.Services
 
             //Fazer chamada do chatgpt usando o _gptClient e armazenar o response na variavel summary
             string summary = string.Empty;
+            try
+            {
+                 summary = await _gptClient.GetAnswer($"Summary: {fileContent}");
+            } catch (Exception ex)
+            {
+                throw new ServiceException(ErrorConstants.FAILURE_GPT_API);
+            }
         
             try
             {
@@ -57,8 +64,9 @@ namespace summary.api.Services
 
         private void ValidateFile(IFormFile file)
         {
-            // Fazer Validações da entrada descritas na história
-            throw new NotImplementedException();
+            if (file == null) throw new ServiceException(ErrorConstants.INVALID_FILE);
+            if (file.Length > 1000000 || file.Length <= 0) throw new ServiceException(ErrorConstants.INVALID_FILE_SIZE);
+            if (file.FileName == "" || file.FileName == null || Path.GetExtension(file.FileName).ToLower() == "") throw new ServiceException(ErrorConstants.INVALID_FILE_NAME);
         }
 
         private string ReadTxtFile(Stream stream)
