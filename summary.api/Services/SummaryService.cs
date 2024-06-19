@@ -76,21 +76,27 @@ namespace summary.api.Services
             if (file.Length > MAX_FILE_SIZE)
                 throw new ServiceException(ErrorConstants.INVALID_FILE_SIZE);
 
-            if (file == null || string.IsNullOrEmpty(file.FileName) ||
-    !new[] { ".doc", ".docx", ".txt" }.Contains(Path.GetExtension(file.FileName).ToLower()))
+          
+
+            if (file == null || string.IsNullOrEmpty(file.FileName) ||string.IsNullOrEmpty(Path.GetExtension(file.FileName)))
             {
                 throw new ServiceException(ErrorConstants.INVALID_FILE_NAME);
             }
 
-            string[] allowedExtensions = { "docx", "doc", "txt" };
-            var fileExtension = file.FileName.Split(".")[1];
-
-            var check = allowedExtensions.ToList().Find(e => e == fileExtension);
-
-            if (check is null)
+            else
             {
-                throw new ServiceException(ErrorConstants.INVALID_FILE_FORMAT);
+                string[] allowedExtensions = { "docx", "doc", "txt" };
+                var fileExtension = file.FileName.Split(".")[1];
+
+                var check = allowedExtensions.ToList().Find(e => e == fileExtension);
+
+                if (check is null)
+                {
+                    throw new ServiceException(ErrorConstants.INVALID_FILE_FORMAT);
+                }
             }
+
+          
         }
 
         private string ReadTxtFile(Stream stream)

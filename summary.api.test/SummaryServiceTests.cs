@@ -165,8 +165,24 @@ namespace summary.api.test
             _gptClientMock.Verify(g => g.GetAnswer(It.IsAny<string>()), Times.Never);
             _summaryRepositoryMock.Verify(s => s.SaveSummary(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
         }
-        
-        //CreateSummary_InvalidSizeFile_ThrowsServicesException
+
+        [Fact]
+        public async Task CreateSummary_InvalidSizeFile_ThrowsServiceException()
+        {
+            // Arrange
+            var invalidSizeFile = new Mock<IFormFile>();
+            invalidSizeFile.Setup(f => f.Length).Returns(1000001); // Tamanho maior que o limite
+            invalidSizeFile.Setup(f => f.FileName).Returns("invalid_file.txt"); // Nome válido para evitar outros erros
+
+            // Act and Assert
+            var exception = await Assert.ThrowsAsync<ServiceException>(() => _summaryService.CreateSummary(invalidSizeFile.Object));
+            Assert.Equal(ErrorConstants.INVALID_FILE_SIZE, exception.Error.Code);
+            _fileReaderMock.Verify(f => f.ReadTxtFile(It.IsAny<Stream>()), Times.Never);
+            _fileReaderMock.Verify(f => f.ReadDocFile(It.IsAny<Stream>()), Times.Never);
+            _fileReaderMock.Verify(f => f.ReadDocxFile(It.IsAny<Stream>()), Times.Never);
+            _gptClientMock.Verify(g => g.GetAnswer(It.IsAny<string>()), Times.Never);
+            _summaryRepositoryMock.Verify(s => s.SaveSummary(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+        }
 
         [Theory]
         [InlineData("invalid_file")]
