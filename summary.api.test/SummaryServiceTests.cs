@@ -62,9 +62,40 @@ namespace summary.api.test
             _summaryRepositoryMock.Verify(s => s.SaveSummary(It.Is<string>(s => s.Equals(fileMock.Object.FileName)), It.Is<string>(s => s.Equals(summaryText))), Times.Once);
         }
 
-        // CreateSummary_Valid_Doc_File_SummaryGeneratedAndSaved
+		[Fact]
+		public async Task CreateSummary_Valid_Doc_File_SummaryGeneratedAndSaved()
+		{
+			// Arrange
+			var content = "This is the content of the file.";
+			var contentStream = new MemoryStream(Encoding.UTF8.GetBytes(content));
+			var fileMock = new Mock<IFormFile>();
+			fileMock.Setup(f => f.Length).Returns(1000000);
+			fileMock.Setup(f => f.FileName).Returns("example.doc");
+			fileMock.Setup(f => f.OpenReadStream()).Returns(contentStream);
 
-        [Fact]
+			var summaryText = "Summary of the file content";
+			var summaryMock = new SummaryModel
+			{
+				Summary = summaryText,
+				FileName = fileMock.Object.FileName,
+				CreatedDate = DateTime.Now,
+				Id = 1
+			};
+			_fileReaderMock.Setup(f => f.ReadDocFile(It.IsAny<Stream>())).Returns(content);
+			_gptClientMock.Setup(g => g.GetAnswer(It.IsAny<string>())).ReturnsAsync(summaryText);
+			_summaryRepositoryMock.Setup(s => s.SaveSummary(It.IsAny<string>(), It.IsAny<string>())).Returns(summaryMock);
+
+			// Act
+			var summaryResponse = await _summaryService.CreateSummary(fileMock.Object);
+
+			// Assert
+			Assert.Equal(summaryMock, summaryResponse);
+			_fileReaderMock.Verify(f => f.ReadDocFile(It.IsAny<Stream>()), Times.Once);
+			_gptClientMock.Verify(g => g.GetAnswer(It.Is<string>(s => s.Equals(content))), Times.Once);
+			_summaryRepositoryMock.Verify(s => s.SaveSummary(It.Is<string>(s => s.Equals(fileMock.Object.FileName)), It.Is<string>(s => s.Equals(summaryText))), Times.Once);
+		}
+
+		[Fact]
         public async Task CreateSummary_Valid_Docx_File_SummaryGeneratedAndSaved()
         {
             // Arrange
@@ -95,10 +126,44 @@ namespace summary.api.test
             _fileReaderMock.Verify(f => f.ReadDocxFile(It.IsAny<Stream>()), Times.Once);
 			_gptClientMock.Verify(g => g.GetAnswer(It.Is<string>(s => s.Equals(content))), Times.Once);
 			_summaryRepositoryMock.Verify(s => s.SaveSummary(It.Is<string>(s => s.Equals(fileMock.Object.FileName)), It.Is<string>(s => s.Equals(summaryText))), Times.Once);
-
         }
 
-        [Fact]
+		[Fact]
+		public async Task CreateSummary_InvalidSizeFile_ThrowsServicesException()
+		{
+			// Arrange
+			var content = "This is the content of the file.";
+			var contentStream = new MemoryStream(Encoding.UTF8.GetBytes(content));
+			var fileMock = new Mock<IFormFile>();
+			fileMock.Setup(f => f.Length).Returns(1000001);
+			fileMock.Setup(f => f.FileName).Returns("example.docx");
+			fileMock.Setup(f => f.OpenReadStream()).Returns(contentStream);
+
+			var summaryText = "Summary of the file content";
+			var summaryMock = new SummaryModel
+			{
+				Summary = summaryText,
+				FileName = fileMock.Object.FileName,
+				CreatedDate = DateTime.Now,
+				Id = 1
+			};
+			_fileReaderMock.Setup(f => f.ReadDocxFile(It.IsAny<Stream>())).Returns(content);
+			_gptClientMock.Setup(g => g.GetAnswer(It.IsAny<string>())).ReturnsAsync(summaryText);
+			_summaryRepositoryMock.Setup(s => s.SaveSummary(It.IsAny<string>(), It.IsAny<string>())).Returns(summaryMock);
+
+			// Act
+			var exception = await Assert.ThrowsAsync<ServiceException>(() => _summaryService.CreateSummary(fileMock.Object));
+			Assert.Equal(ErrorConstants.INVALID_FILE_SIZE, exception.Error.Code);
+
+			// Assert
+			await Assert.ThrowsAsync<ServiceException>(() => _summaryService.CreateSummary(fileMock.Object));
+			_fileReaderMock.Verify(f => f.ReadDocxFile(It.IsAny<Stream>()), Times.Never);
+			_gptClientMock.Verify(g => g.GetAnswer(It.Is<string>(s => s.Equals(content))), Times.Never);
+			_summaryRepositoryMock.Verify(s => s.SaveSummary(It.Is<string>(s => s.Equals(fileMock.Object.FileName)), It.Is<string>(s => s.Equals(summaryText))), Times.Never);
+
+		}
+
+		[Fact]
         public async Task CreateSummary_InvalidFile_ThrowsServiceException()
         {
             // Arrange
@@ -133,7 +198,6 @@ namespace summary.api.test
             _summaryRepositoryMock.Verify(s => s.SaveSummary(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
         }
         
-        //CreateSummary_InvalidSizeFile_ThrowsServicesException
 
         [Theory]
         [InlineData("invalid_file")]
