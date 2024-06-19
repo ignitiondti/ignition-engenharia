@@ -65,7 +65,7 @@ namespace summary.api.Services
 
         private void ValidateFile(IFormFile file)
         {
-            if (file is null)
+            if (file == null || file.Length == 0)
 				throw new ServiceException(ErrorConstants.INVALID_FILE);
 
 			if (string.IsNullOrEmpty(file.FileName) || string.IsNullOrEmpty(Path.GetExtension(file.FileName)))
@@ -73,9 +73,6 @@ namespace summary.api.Services
 
 			if (file.Length > MAX_FILE_SIZE)
 				throw new ServiceException(ErrorConstants.INVALID_FILE_SIZE);
-
-            if (file.Length == 0)
-                throw new ServiceException(ErrorConstants.INVALID_FILE);
         }
 
         private string ReadTxtFile(Stream stream)
