@@ -153,9 +153,9 @@ namespace summary.api.test
 
 			// Act
 			var exception = await Assert.ThrowsAsync<ServiceException>(() => _summaryService.CreateSummary(fileMock.Object));
-			Assert.Equal(ErrorConstants.INVALID_FILE_SIZE, exception.Error.Code);
 
 			// Assert
+			Assert.Equal(ErrorConstants.INVALID_FILE_SIZE, exception.Error.Code);
 			await Assert.ThrowsAsync<ServiceException>(() => _summaryService.CreateSummary(fileMock.Object));
 			_fileReaderMock.Verify(f => f.ReadDocxFile(It.IsAny<Stream>()), Times.Never);
 			_gptClientMock.Verify(g => g.GetAnswer(It.Is<string>(s => s.Equals(content))), Times.Never);
