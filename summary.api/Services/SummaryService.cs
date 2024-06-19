@@ -3,6 +3,7 @@ using summary.api.Clients.GPT;
 using summary.api.Exceptions;
 using summary.api.Repositorys;
 using summary.api.Services.Model;
+using System.Drawing;
 
 
 namespace summary.api.Services
@@ -74,6 +75,10 @@ namespace summary.api.Services
 
             if (file.Length > MAX_FILE_SIZE)
                 throw new ServiceException(ErrorConstants.INVALID_FILE_SIZE);
+
+            if(
+              string.IsNullOrEmpty(file.FileName) || string.IsNullOrEmpty((file.FileName))
+              )
 
             if (!File.Exists(file.FileName))
                 throw new ServiceException(ErrorConstants.INVALID_FILE_NAME);
