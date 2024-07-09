@@ -1,4 +1,4 @@
-﻿namespace summary.api.Clients.GPT
+﻿namespace summary.api.Clients.API
 {
     public interface IGeminiApi
     {

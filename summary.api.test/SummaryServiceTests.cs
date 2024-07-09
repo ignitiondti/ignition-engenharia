@@ -1,5 +1,4 @@
 ﻿using summary.api.Clients.Files;
-using summary.api.Clients.GPT;
 using summary.api.Exceptions;
 using summary.api.Repositorys;
 using summary.api.Services;
@@ -8,13 +7,14 @@ using Microsoft.AspNetCore.Http;
 using Moq;
 using System.Text;
 using Xunit;
+using summary.api.Clients.API;
 
 namespace summary.api.test
 {
     public class SummaryServiceTests
     {
         private readonly Mock<ISummaryRepository> _summaryRepositoryMock;
-        private readonly Mock<IGeminiApi> _gptClientMock;
+        private readonly Mock<IGeminiApi> _geminiApiMock;
         private readonly Mock<IFileReader> _fileReaderMock;
         private readonly SummaryService _summaryService;
 
@@ -22,9 +22,9 @@ namespace summary.api.test
         public SummaryServiceTests()
         {
             _summaryRepositoryMock = new Mock<ISummaryRepository>();
-            _gptClientMock = new Mock<IGeminiApi>();
+            _geminiApiMock = new Mock<IGeminiApi>();
             _fileReaderMock = new Mock<IFileReader>();
-            _summaryService = new SummaryService(_summaryRepositoryMock.Object, _gptClientMock.Object, _fileReaderMock.Object);
+            _summaryService = new SummaryService(_summaryRepositoryMock.Object, _geminiApiMock.Object, _fileReaderMock.Object);
 
         }
 
@@ -49,7 +49,7 @@ namespace summary.api.test
                 Id = 1
             };
             _fileReaderMock.Setup(f => f.ReadTxtFile(It.IsAny<Stream>())).Returns(content);
-            _gptClientMock.Setup(g => g.GetAnswer(It.IsAny<string>())).ReturnsAsync(summaryText);
+            _geminiApiMock.Setup(g => g.GetAnswer(It.IsAny<string>())).ReturnsAsync(summaryText);
             _summaryRepositoryMock.Setup(s => s.SaveSummary(It.IsAny<string>(), It.IsAny<string>())).Returns(summaryMock);
 
             // Act
@@ -58,7 +58,7 @@ namespace summary.api.test
             // Assert
             Assert.Equal(summaryMock, summaryResponse);
             _fileReaderMock.Verify(f => f.ReadTxtFile(It.IsAny<Stream>()), Times.Once);
-            _gptClientMock.Verify(g => g.GetAnswer(It.Is<string>(s => s.Equals($"Summary: {content}"))), Times.Once);
+            _geminiApiMock.Verify(g => g.GetAnswer(It.Is<string>(s => s.Equals($"Summary: {content}"))), Times.Once);
             _summaryRepositoryMock.Verify(s => s.SaveSummary(It.Is<string>(s => s.Equals(fileMock.Object.FileName)), It.Is<string>(s => s.Equals(summaryText))), Times.Once);
 
         }
@@ -83,7 +83,7 @@ namespace summary.api.test
                 Id = 1
             };
             _fileReaderMock.Setup(f => f.ReadDocFile(It.IsAny<Stream>())).Returns(content);
-            _gptClientMock.Setup(g => g.GetAnswer(It.IsAny<string>())).ReturnsAsync(summaryText);
+            _geminiApiMock.Setup(g => g.GetAnswer(It.IsAny<string>())).ReturnsAsync(summaryText);
             _summaryRepositoryMock.Setup(s => s.SaveSummary(It.IsAny<string>(), It.IsAny<string>())).Returns(summaryMock);
 
             // Act
@@ -92,7 +92,7 @@ namespace summary.api.test
             // Assert
             Assert.Equal(summaryMock, summaryResponse);
             _fileReaderMock.Verify(f => f.ReadDocFile(It.IsAny<Stream>()), Times.Once);
-            _gptClientMock.Verify(g => g.GetAnswer(It.Is<string>(s => s.Equals($"Summary: {content}"))), Times.Once);
+            _geminiApiMock.Verify(g => g.GetAnswer(It.Is<string>(s => s.Equals($"Summary: {content}"))), Times.Once);
             _summaryRepositoryMock.Verify(s => s.SaveSummary(It.Is<string>(s => s.Equals(fileMock.Object.FileName)), It.Is<string>(s => s.Equals(summaryText))), Times.Once);
 
         }
@@ -117,7 +117,7 @@ namespace summary.api.test
                 Id = 1
             };
             _fileReaderMock.Setup(f => f.ReadDocxFile(It.IsAny<Stream>())).Returns(content);
-            _gptClientMock.Setup(g => g.GetAnswer(It.IsAny<string>())).ReturnsAsync(summaryText);
+            _geminiApiMock.Setup(g => g.GetAnswer(It.IsAny<string>())).ReturnsAsync(summaryText);
             _summaryRepositoryMock.Setup(s => s.SaveSummary(It.IsAny<string>(), It.IsAny<string>())).Returns(summaryMock);
 
             // Act
@@ -126,7 +126,7 @@ namespace summary.api.test
             // Assert
             Assert.Equal(summaryMock, summaryResponse);
             _fileReaderMock.Verify(f => f.ReadDocxFile(It.IsAny<Stream>()), Times.Once);
-            _gptClientMock.Verify(g => g.GetAnswer(It.Is<string>(s => s.Equals($"Summary: {content}"))), Times.Once);
+            _geminiApiMock.Verify(g => g.GetAnswer(It.Is<string>(s => s.Equals($"Summary: {content}"))), Times.Once);
             _summaryRepositoryMock.Verify(s => s.SaveSummary(It.Is<string>(s => s.Equals(fileMock.Object.FileName)), It.Is<string>(s => s.Equals(summaryText))), Times.Once);
 
         }
@@ -143,7 +143,7 @@ namespace summary.api.test
             _fileReaderMock.Verify(f => f.ReadTxtFile(It.IsAny<Stream>()), Times.Never);
             _fileReaderMock.Verify(f => f.ReadDocFile(It.IsAny<Stream>()), Times.Never);
             _fileReaderMock.Verify(f => f.ReadDocxFile(It.IsAny<Stream>()), Times.Never);
-            _gptClientMock.Verify(g => g.GetAnswer(It.IsAny<string>()), Times.Never);
+            _geminiApiMock.Verify(g => g.GetAnswer(It.IsAny<string>()), Times.Never);
             _summaryRepositoryMock.Verify(s => s.SaveSummary(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
         }
 
@@ -162,7 +162,7 @@ namespace summary.api.test
             _fileReaderMock.Verify(f => f.ReadTxtFile(It.IsAny<Stream>()), Times.Never);
             _fileReaderMock.Verify(f => f.ReadDocFile(It.IsAny<Stream>()), Times.Never);
             _fileReaderMock.Verify(f => f.ReadDocxFile(It.IsAny<Stream>()), Times.Never);
-            _gptClientMock.Verify(g => g.GetAnswer(It.IsAny<string>()), Times.Never);
+            _geminiApiMock.Verify(g => g.GetAnswer(It.IsAny<string>()), Times.Never);
             _summaryRepositoryMock.Verify(s => s.SaveSummary(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
         }
         [Fact]
@@ -179,7 +179,7 @@ namespace summary.api.test
             _fileReaderMock.Verify(f => f.ReadTxtFile(It.IsAny<Stream>()), Times.Never);
             _fileReaderMock.Verify(f => f.ReadDocFile(It.IsAny<Stream>()), Times.Never);
             _fileReaderMock.Verify(f => f.ReadDocxFile(It.IsAny<Stream>()), Times.Never);
-            _gptClientMock.Verify(g => g.GetAnswer(It.IsAny<string>()), Times.Never);
+            _geminiApiMock.Verify(g => g.GetAnswer(It.IsAny<string>()), Times.Never);
             _summaryRepositoryMock.Verify(s => s.SaveSummary(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
         }
 
@@ -200,7 +200,7 @@ namespace summary.api.test
             _fileReaderMock.Verify(f => f.ReadTxtFile(It.IsAny<Stream>()), Times.Never);
             _fileReaderMock.Verify(f => f.ReadDocFile(It.IsAny<Stream>()), Times.Never);
             _fileReaderMock.Verify(f => f.ReadDocxFile(It.IsAny<Stream>()), Times.Never);
-            _gptClientMock.Verify(g => g.GetAnswer(It.IsAny<string>()), Times.Never);
+            _geminiApiMock.Verify(g => g.GetAnswer(It.IsAny<string>()), Times.Never);
             _summaryRepositoryMock.Verify(s => s.SaveSummary(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
         }
 
@@ -218,7 +218,7 @@ namespace summary.api.test
             var exception = await Assert.ThrowsAsync<ServiceException>(() => _summaryService.CreateSummary(invalidTxtFile.Object));
             Assert.Equal(ErrorConstants.FAILURE_READ_TXT_FILE, exception.Error.Code);
             _fileReaderMock.Verify(f => f.ReadTxtFile(It.IsAny<Stream>()), Times.Once);
-            _gptClientMock.Verify(g => g.GetAnswer(It.IsAny<string>()), Times.Never);
+            _geminiApiMock.Verify(g => g.GetAnswer(It.IsAny<string>()), Times.Never);
             _summaryRepositoryMock.Verify(s => s.SaveSummary(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
         }
 
@@ -236,7 +236,7 @@ namespace summary.api.test
             var exception = await Assert.ThrowsAsync<ServiceException>(() => _summaryService.CreateSummary(invalidTxtFile.Object));
             Assert.Equal(ErrorConstants.FAILURE_READ_DOC_FILE, exception.Error.Code);
             _fileReaderMock.Verify(f => f.ReadDocFile(It.IsAny<Stream>()), Times.Once);
-            _gptClientMock.Verify(g => g.GetAnswer(It.IsAny<string>()), Times.Never);
+            _geminiApiMock.Verify(g => g.GetAnswer(It.IsAny<string>()), Times.Never);
             _summaryRepositoryMock.Verify(s => s.SaveSummary(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
         }
 
@@ -255,13 +255,13 @@ namespace summary.api.test
             //Assert
             Assert.Equal(ErrorConstants.FAILURE_READ_DOCX_FILE, exception.Error.Code);
             _fileReaderMock.Verify(f => f.ReadDocxFile(It.IsAny<Stream>()), Times.Once);
-            _gptClientMock.Verify(g => g.GetAnswer(It.IsAny<string>()), Times.Never);
+            _geminiApiMock.Verify(g => g.GetAnswer(It.IsAny<string>()), Times.Never);
             _summaryRepositoryMock.Verify(s => s.SaveSummary(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
         }
 
 
         [Fact]
-        public async Task CreateSummary_GptClientFailure_ThrowsServiceException()
+        public async Task CreateSummary_GeminiClientFailure_ThrowsServiceException()
         {
             // Arrange
             var content = "This is the content of the file.";
@@ -273,14 +273,14 @@ namespace summary.api.test
 
             _fileReaderMock.Setup(f => f.ReadTxtFile(It.IsAny<Stream>())).Returns(content);
 
-            _gptClientMock.Setup(g => g.GetAnswer(It.IsAny<string>()))
+            _geminiApiMock.Setup(g => g.GetAnswer(It.IsAny<string>()))
                 .Throws(new Exception());
 
             // Act and Assert
             var exception = await Assert.ThrowsAsync<ServiceException>(() => _summaryService.CreateSummary(validTxtFile.Object));
-            Assert.Equal(ErrorConstants.FAILURE_GPT_API, exception.Error.Code);
+            Assert.Equal(ErrorConstants.FAILURE_IA_API, exception.Error.Code);
             _fileReaderMock.Verify(f => f.ReadTxtFile(It.IsAny<Stream>()), Times.Once);
-            _gptClientMock.Verify(g => g.GetAnswer(It.Is<string>(s => s.Equals($"Summary: {content}"))), Times.Once);
+            _geminiApiMock.Verify(g => g.GetAnswer(It.Is<string>(s => s.Equals($"Summary: {content}"))), Times.Once);
             _summaryRepositoryMock.Verify(s => s.SaveSummary(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
         }
 
@@ -296,7 +296,7 @@ namespace summary.api.test
             validTxtFile.Setup(f => f.OpenReadStream()).Returns(contentStream);
 
             var summaryText = "Summary of the file content";
-            _gptClientMock.Setup(g => g.GetAnswer(It.IsAny<string>())).ReturnsAsync(summaryText);
+            _geminiApiMock.Setup(g => g.GetAnswer(It.IsAny<string>())).ReturnsAsync(summaryText);
             _fileReaderMock.Setup(f => f.ReadTxtFile(It.IsAny<Stream>())).Returns(content);
 
             _summaryRepositoryMock.Setup(r => r.SaveSummary(It.IsAny<string>(), It.IsAny<string>()))
@@ -306,7 +306,7 @@ namespace summary.api.test
             var exception = await Assert.ThrowsAsync<ServiceException>(() => _summaryService.CreateSummary(validTxtFile.Object));
 
             Assert.Equal(ErrorConstants.FAILURE_SAVE_SUMMARY, exception.Error.Code);
-            _gptClientMock.Verify(g => g.GetAnswer(It.Is<string>(s => s.Equals($"Summary: {content}"))), Times.Once);
+            _geminiApiMock.Verify(g => g.GetAnswer(It.Is<string>(s => s.Equals($"Summary: {content}"))), Times.Once);
             _summaryRepositoryMock.Verify(s => s.SaveSummary(It.Is<string>(s => s.Equals(validTxtFile.Object.FileName)), It.Is<string>(s => s.Equals(summaryText))), Times.Once);
 
         }

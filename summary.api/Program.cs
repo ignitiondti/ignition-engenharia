@@ -1,5 +1,5 @@
+using summary.api.Clients.API;
 using summary.api.Clients.Files;
-using summary.api.Clients.GPT;
 using summary.api.Repositorys;
 using summary.api.Services;
 

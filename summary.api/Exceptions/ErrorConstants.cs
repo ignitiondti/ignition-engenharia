@@ -10,7 +10,7 @@
 
         public const int INVALID_FILE_SIZE = 1002;
 
-        public const int FAILURE_GPT_API = 1003;
+        public const int FAILURE_IA_API = 1003;
 
         public const int FAILURE_SAVE_SUMMARY = 1004;
 

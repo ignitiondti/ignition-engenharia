@@ -127,7 +127,7 @@
     <value>Invalid file size.</value>
   </data>
   <data name="1003" xml:space="preserve">
-    <value>Failed to communicate with gpt API.</value>
+    <value>Failed to communicate with IA API.</value>
   </data>
   <data name="1004" xml:space="preserve">
     <value>Faled save summary.</value>

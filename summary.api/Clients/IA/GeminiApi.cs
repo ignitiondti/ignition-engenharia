@@ -1,7 +1,7 @@
 ﻿using System.Text;
 using System.Text.Json;
 
-namespace summary.api.Clients.GPT
+namespace summary.api.Clients.API
 {
     public class GeminiApi : IGeminiApi
     {
@@ -15,7 +15,7 @@ namespace summary.api.Clients.GPT
         {
             var client = _httpClientFactory.CreateClient();
             var requestBody = CreateRequest(question);
-            var apiKey = "AIzaSyCAKGgizRISf_-0-vKai-y0wkSdMivnuWQ";
+            var apiKey = "AIzaSyA906TQqH8HDm3Ff3JZLOPlDVIyEBu6Fp0";
             var serializeOptions = new JsonSerializerOptions
             {
                 // This can be changed to other naming policies like SnakeCaseLower, KebabCaseLower
@@ -50,7 +50,7 @@ namespace summary.api.Clients.GPT
                     {
                         new GeminiPart
                         {
-                            Text = prompt
+                            Text = "Resuma:" + prompt
                         }
                     }
                 }

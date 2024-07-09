@@ -1,5 +1,5 @@
-﻿using summary.api.Clients.Files;
-using summary.api.Clients.GPT;
+﻿using summary.api.Clients.API;
+using summary.api.Clients.Files;
 using summary.api.Exceptions;
 using summary.api.Repositorys;
 using summary.api.Services.Model;
@@ -9,7 +9,7 @@ namespace summary.api.Services
 {
     public class SummaryService : ISummaryService
     {
-        private readonly IGeminiApi _gptClient;
+        private readonly IGeminiApi _geminiApi;
 
         private readonly ISummaryRepository _summaryRepository;
 
@@ -19,11 +19,11 @@ namespace summary.api.Services
 
         public SummaryService(
             ISummaryRepository summaryRepository,
-            IGeminiApi gptClient,
+            IGeminiApi geminiApi,
             IFileReader fileReader)
         {
             _summaryRepository = summaryRepository;
-            _gptClient = gptClient;
+            _geminiApi = geminiApi;
             _fileReader = fileReader;
         }
 
@@ -45,12 +45,12 @@ namespace summary.api.Services
             string summary;
             try
             {
-                summary = await _gptClient.GetAnswer($"Summary: {fileContent}");
+                summary = await _geminiApi.GetAnswer($"Summary: {fileContent}");
 
             }
             catch (Exception)
             {
-                throw new ServiceException(ErrorConstants.FAILURE_GPT_API);
+                throw new ServiceException(ErrorConstants.FAILURE_IA_API);
             }
 
             try
