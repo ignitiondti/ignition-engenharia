@@ -42,17 +42,9 @@ namespace summary.api.Services
                 _ => throw new ServiceException(ErrorConstants.INVALID_FILE_FORMAT),
             };
 
-            string summary;
-            try
-            {
-                summary = await _geminiApi.GetAnswer($"Summary: {fileContent}");
-
-            }
-            catch (Exception)
-            {
-                throw new ServiceException(ErrorConstants.FAILURE_IA_API);
-            }
-
+            //Fazer chamada do chatgpt usando o _gptClient e armazenar o response na variavel summary
+            string summary = string.Empty;
+        
             try
             {
                 return _summaryRepository.SaveSummary(file.FileName, summary);
@@ -65,23 +57,8 @@ namespace summary.api.Services
 
         private void ValidateFile(IFormFile file)
         {
-            if (file == null || file.Length == 0)
-            {
-                throw new ServiceException(ErrorConstants.INVALID_FILE);
-            }
-
-            if (file.Length > MAX_FILE_SIZE)
-            {
-                throw new ServiceException(ErrorConstants.INVALID_FILE_SIZE);
-            }
-
-            if (
-                string.IsNullOrEmpty(file.FileName) ||
-                string.IsNullOrEmpty(Path.GetExtension(file.FileName))
-            )
-            {
-                throw new ServiceException(ErrorConstants.INVALID_FILE_NAME);
-            }
+            // Fazer Validações da entrada descritas na história
+            throw new NotImplementedException();
         }
 
         private string ReadTxtFile(Stream stream)
