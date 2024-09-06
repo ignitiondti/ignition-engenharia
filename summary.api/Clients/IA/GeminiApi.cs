@@ -14,7 +14,7 @@ namespace summary.api.Clients.API
         public async Task<string> GetAnswer(string question)
         {
             var client = _httpClientFactory.CreateClient();
-            var requestBody = CreateRequest(question);
+            var requestBody = CreateRequest($"Summary: {question}");
             var apiKey = "AIzaSyCUmJBUXqpINJlUM2hE7C68W03QfwBfeA0";
             var serializeOptions = new JsonSerializerOptions
             {
