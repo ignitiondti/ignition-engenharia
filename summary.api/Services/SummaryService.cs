@@ -47,6 +47,16 @@ namespace summary.api.Services
 
             try
             {
+                summary = await _geminiApi.GetAnswer(fileContent);
+            }
+            catch (Exception) 
+            {
+                throw new ServiceException(ErrorConstants.FAILURE_IA_API);
+            }
+            
+
+            try
+            {
                 return _summaryRepository.SaveSummary(file.FileName, summary);
             }
             catch (Exception)
@@ -57,8 +67,15 @@ namespace summary.api.Services
 
         private void ValidateFile(IFormFile file)
         {
-            // Fazer Validações da entrada descritas na história
-            throw new NotImplementedException();
+            if(file == null || file.Length == 0)
+                throw new ServiceException(ErrorConstants.INVALID_FILE);
+
+            else if (file.Length > MAX_FILE_SIZE)
+                throw new ServiceException(ErrorConstants.INVALID_FILE_SIZE);
+
+            else if (String.IsNullOrEmpty(file.FileName)|| String.IsNullOrEmpty(Path.GetExtension(file.FileName)))
+                throw new ServiceException(ErrorConstants.INVALID_FILE_NAME);
+
         }
 
         private string ReadTxtFile(Stream stream)
