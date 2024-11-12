@@ -10,6 +10,17 @@
       },
       "dotnetRunMessages": true,
       "applicationUrl": "https://localhost:7189;http://localhost:5058"
+    },
+    "WSL": {
+      "commandName": "WSL2",
+      "launchBrowser": true,
+      "launchUrl": "https://localhost:7189/swagger",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_URLS": "https://localhost:7189;http://localhost:5058",
+        "KEY_VAULT_NAME": "summary-kv"
+      },
+      "distributionName": ""
     }
   },
   "$schema": "https://json.schemastore.org/launchsettings.json",

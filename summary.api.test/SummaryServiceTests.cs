@@ -140,7 +140,7 @@ namespace summary.api.test
         [InlineData("invalid_file")]
         [InlineData("")]
         [InlineData(null)]
-        public async Task CreateSummary_InvalidFileNameEmpity_ThrowsServicesException(string fileName)
+        public async Task CreateSummary_InvalidFileNameEmpty_ThrowsServicesException(string fileName)
         {
             // Arrange
             var invalidFile = new Mock<IFormFile>();

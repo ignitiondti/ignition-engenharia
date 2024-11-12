@@ -15,7 +15,7 @@ namespace summary.api.Clients.API
         {
             var client = _httpClientFactory.CreateClient();
             var requestBody = CreateRequest($"Summary: {question}");
-            var apiKey = "AIzaSyDolw3EAZY8NPxkc1AsApJSuoajJuDIZpY";
+            var apiKey = "AIzaSyARNGlYBaigEqqzrkuuTRZhefSsHUSNdtA";
             var serializeOptions = new JsonSerializerOptions
             {
                 // This can be changed to other naming policies like SnakeCaseLower, KebabCaseLower
