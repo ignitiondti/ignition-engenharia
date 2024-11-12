@@ -1,13 +1,13 @@
-﻿using Microsoft.AspNetCore.Http;
-using Moq;
-using summary.api.Clients.API;
-using summary.api.Clients.Files;
+﻿using summary.api.Clients.Files;
 using summary.api.Exceptions;
 using summary.api.Repositorys;
 using summary.api.Services;
 using summary.api.Services.Model;
+using Microsoft.AspNetCore.Http;
+using Moq;
 using System.Text;
 using Xunit;
+using summary.api.Clients.API;
 
 namespace summary.api.test
 {
@@ -58,12 +58,44 @@ namespace summary.api.test
             // Assert
             Assert.Equal(summaryMock, summaryResponse);
             _fileReaderMock.Verify(f => f.ReadTxtFile(It.IsAny<Stream>()), Times.Once);
-            _geminiApiMock.Verify(g => g.GetAnswer(It.Is<string>(s => s.Equals(content))), Times.Once);
+            _geminiApiMock.Verify(g => g.GetAnswer(It.Is<string>(s => s.Equals($"Summary: {content}"))), Times.Once);
             _summaryRepositoryMock.Verify(s => s.SaveSummary(It.Is<string>(s => s.Equals(fileMock.Object.FileName)), It.Is<string>(s => s.Equals(summaryText))), Times.Once);
 
         }
 
-        //CreateSummary_Valid_Doc_File_SummaryGeneratedAndSaved
+        [Fact]
+        public async Task CreateSummary_Valid_Doc_File_SummaryGeneratedAndSaved()
+        {
+            // Arrange
+            var content = "This is the content of the file.";
+            var contentStream = new MemoryStream(Encoding.UTF8.GetBytes(content));
+            var fileMock = new Mock<IFormFile>();
+            fileMock.Setup(f => f.Length).Returns(10);
+            fileMock.Setup(f => f.FileName).Returns("example.doc");
+            fileMock.Setup(f => f.OpenReadStream()).Returns(contentStream);
+
+            var summaryText = "Summary of the file content";
+            var summaryMock = new SummaryModel
+            {
+                Summary = summaryText,
+                FileName = fileMock.Object.FileName,
+                CreatedDate = DateTime.Now,
+                Id = 1
+            };
+            _fileReaderMock.Setup(f => f.ReadDocFile(It.IsAny<Stream>())).Returns(content);
+            _geminiApiMock.Setup(g => g.GetAnswer(It.IsAny<string>())).ReturnsAsync(summaryText);
+            _summaryRepositoryMock.Setup(s => s.SaveSummary(It.IsAny<string>(), It.IsAny<string>())).Returns(summaryMock);
+
+            // Act
+            var summaryResponse = await _summaryService.CreateSummary(fileMock.Object);
+
+            // Assert
+            Assert.Equal(summaryMock, summaryResponse);
+            _fileReaderMock.Verify(f => f.ReadDocFile(It.IsAny<Stream>()), Times.Once);
+            _geminiApiMock.Verify(g => g.GetAnswer(It.Is<string>(s => s.Equals($"Summary: {content}"))), Times.Once);
+            _summaryRepositoryMock.Verify(s => s.SaveSummary(It.Is<string>(s => s.Equals(fileMock.Object.FileName)), It.Is<string>(s => s.Equals(summaryText))), Times.Once);
+
+        }
 
         [Fact]
         public async Task CreateSummary_Valid_Docx_File_SummaryGeneratedAndSaved()
@@ -94,7 +126,7 @@ namespace summary.api.test
             // Assert
             Assert.Equal(summaryMock, summaryResponse);
             _fileReaderMock.Verify(f => f.ReadDocxFile(It.IsAny<Stream>()), Times.Once);
-            _geminiApiMock.Verify(g => g.GetAnswer(It.Is<string>(s => s.Equals(content))), Times.Once);
+            _geminiApiMock.Verify(g => g.GetAnswer(It.Is<string>(s => s.Equals($"Summary: {content}"))), Times.Once);
             _summaryRepositoryMock.Verify(s => s.SaveSummary(It.Is<string>(s => s.Equals(fileMock.Object.FileName)), It.Is<string>(s => s.Equals(summaryText))), Times.Once);
 
         }
@@ -133,8 +165,23 @@ namespace summary.api.test
             _geminiApiMock.Verify(g => g.GetAnswer(It.IsAny<string>()), Times.Never);
             _summaryRepositoryMock.Verify(s => s.SaveSummary(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
         }
+        [Fact]
+        public async Task CreateSummary_InvalidSizeFile_ThrowsServicesException()
+        {
+            // Arrange
+            var invalidFile = new Mock<IFormFile>();
+            invalidFile.Setup(f => f.Length).Returns(10000001);  // Assume invalid length
+            invalidFile.Setup(f => f.FileName).Returns("invalid_file.txt");
 
-        //CreateSummary_InvalidSizeFile_ThrowsServicesException
+            // Act and Assert
+            var exception = await Assert.ThrowsAsync<ServiceException>(() => _summaryService.CreateSummary(invalidFile.Object));
+            Assert.Equal(ErrorConstants.INVALID_FILE_SIZE, exception.Error.Code);
+            _fileReaderMock.Verify(f => f.ReadTxtFile(It.IsAny<Stream>()), Times.Never);
+            _fileReaderMock.Verify(f => f.ReadDocFile(It.IsAny<Stream>()), Times.Never);
+            _fileReaderMock.Verify(f => f.ReadDocxFile(It.IsAny<Stream>()), Times.Never);
+            _geminiApiMock.Verify(g => g.GetAnswer(It.IsAny<string>()), Times.Never);
+            _summaryRepositoryMock.Verify(s => s.SaveSummary(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+        }
 
         [Theory]
         [InlineData("invalid_file")]
@@ -233,7 +280,7 @@ namespace summary.api.test
             var exception = await Assert.ThrowsAsync<ServiceException>(() => _summaryService.CreateSummary(validTxtFile.Object));
             Assert.Equal(ErrorConstants.FAILURE_IA_API, exception.Error.Code);
             _fileReaderMock.Verify(f => f.ReadTxtFile(It.IsAny<Stream>()), Times.Once);
-            _geminiApiMock.Verify(g => g.GetAnswer(It.Is<string>(s => s.Equals(content))), Times.Once);
+            _geminiApiMock.Verify(g => g.GetAnswer(It.Is<string>(s => s.Equals($"Summary: {content}"))), Times.Once);
             _summaryRepositoryMock.Verify(s => s.SaveSummary(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
         }
 
@@ -259,7 +306,7 @@ namespace summary.api.test
             var exception = await Assert.ThrowsAsync<ServiceException>(() => _summaryService.CreateSummary(validTxtFile.Object));
 
             Assert.Equal(ErrorConstants.FAILURE_SAVE_SUMMARY, exception.Error.Code);
-            _geminiApiMock.Verify(g => g.GetAnswer(It.Is<string>(s => s.Equals(content))), Times.Once);
+            _geminiApiMock.Verify(g => g.GetAnswer(It.Is<string>(s => s.Equals($"Summary: {content}"))), Times.Once);
             _summaryRepositoryMock.Verify(s => s.SaveSummary(It.Is<string>(s => s.Equals(validTxtFile.Object.FileName)), It.Is<string>(s => s.Equals(summaryText))), Times.Once);
 
         }
